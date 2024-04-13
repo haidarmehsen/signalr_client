@@ -14,10 +14,10 @@ class HttpError implements Exception {
   /// errorMessage A descriptive error message.
   ///  statusCode The HTTP status code represented by this error.
   ///
-  HttpError(String? errorMessage, num statusCode)
-      : this.message = errorMessage,
-        this.statusCode = statusCode;
+  HttpError(String? errorMessage, this.statusCode)
+      : message = errorMessage;
 
+  @override
   String toString() {
     return "$statusCode: $message";
   }
@@ -37,8 +37,9 @@ class TimeoutError implements Exception {
   ///@param {string} errorMessage A descriptive error message.
   ///
   TimeoutError([String errorMessage = "A timeout occurred."])
-      : this.message = errorMessage;
+      : message = errorMessage;
 
+  @override
   String toString() {
     return message;
   }
@@ -57,8 +58,9 @@ class AbortError implements Exception {
   ///
   /// errorMessage: A descriptive error message.
   ///
-  AbortError([String message = "An abort occurred."]) : this.message = message;
+  AbortError([this.message = "An abort occurred."]);
 
+  @override
   String toString() {
     return message;
   }
@@ -77,8 +79,9 @@ class GeneralError implements Exception {
   ///
   /// errorMessage: A descriptive error message.
   ///
-  GeneralError(String? errorMessage) : this.message = errorMessage;
+  GeneralError(String? errorMessage) : message = errorMessage;
 
+  @override
   String toString() {
     return message!;
   }
@@ -89,6 +92,7 @@ class NotImplementedException extends GeneralError {
 
   NotImplementedException() : super("Not implemented.");
 
+  @override
   String toString() {
     return message!;
   }
@@ -97,8 +101,9 @@ class NotImplementedException extends GeneralError {
 class InvalidPayloadException extends GeneralError {
   // Methods
 
-  InvalidPayloadException(String errorMessage) : super(errorMessage);
+  InvalidPayloadException(String super.errorMessage);
 
+  @override
   String toString() {
     return message!;
   }

@@ -10,11 +10,11 @@ bool isIntEmpty(int? value) {
 }
 
 bool isStringEmpty(String? value) {
-  return (value == null) || (value.length == 0);
+  return (value == null) || (value.isEmpty);
 }
 
 bool isListEmpty(List? value) {
-  return (value == null) || (value.length == 0);
+  return (value == null) || (value.isEmpty);
 }
 
 String getDataDetail(Object? data, bool includeContent) {
@@ -36,10 +36,10 @@ String getDataDetail(Object? data, bool includeContent) {
 String formatArrayBuffer(Uint8List data) {
   // Uint8Array.map only supports returning another Uint8Array?
   var str = "";
-  data.forEach((val) {
+  for (var val in data) {
     var pad = val < 16 ? "0" : "";
     str += "0x$pad${val.toString()} ";
-  });
+  }
 
   // Trim of trailing space.
   return str.substring(0, str.length - 1);

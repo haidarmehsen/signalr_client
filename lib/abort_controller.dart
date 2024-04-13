@@ -13,23 +13,25 @@ class AbortController implements IAbortSignal {
   // Properties
   bool? _isAborted;
 
+  @override
   OnAbort? onabort;
 
-  bool? get aborted => this._isAborted;
+  @override
+  bool? get aborted => _isAborted;
 
   IAbortSignal get signal => this;
 
   // Methods
 
   AbortController() {
-    this._isAborted = false;
+    _isAborted = false;
   }
 
   void abort() {
-    if (!this._isAborted!) {
-      this._isAborted = true;
-      if (this.onabort != null) {
-        this.onabort!();
+    if (!_isAborted!) {
+      _isAborted = true;
+      if (onabort != null) {
+        onabort!();
       }
     }
   }

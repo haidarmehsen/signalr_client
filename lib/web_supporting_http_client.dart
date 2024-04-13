@@ -18,21 +18,22 @@ class WebSupportingHttpClient extends SignalRHttpClient {
 
   WebSupportingHttpClient(Logger? logger,
       {OnHttpClientCreateCallback? httpClientCreateCallback})
-      : this._logger = logger,
-        this._httpClientCreateCallback = httpClientCreateCallback;
+      : _logger = logger,
+        _httpClientCreateCallback = httpClientCreateCallback;
 
+  @override
   Future<SignalRHttpResponse> send(SignalRHttpRequest request) {
     // Check that abort was not signaled before calling send
     if ((request.abortSignal != null) && request.abortSignal!.aborted!) {
       return Future.error(AbortError());
     }
 
-    if ((request.method == null) || (request.method!.length == 0)) {
-      return Future.error(new ArgumentError("No method defined."));
+    if ((request.method == null) || (request.method!.isEmpty)) {
+      return Future.error(ArgumentError("No method defined."));
     }
 
-    if ((request.url == null) || (request.url!.length == 0)) {
-      return Future.error(new ArgumentError("No url defined."));
+    if ((request.url == null) || (request.url!.isEmpty)) {
+      return Future.error(ArgumentError("No url defined."));
     }
 
     return Future<SignalRHttpResponse>(() async {

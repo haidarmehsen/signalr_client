@@ -53,8 +53,8 @@ class LongPollingTransport implements ITransport {
 
     _logger?.finest("(LongPolling transport) Connecting");
 
-    if (transferFormat == TransferFormat.Binary) {
-      throw new GeneralError(
+    if (transferFormat == TransferFormat.binary) {
+      throw GeneralError(
           "Binary protocols via Long Polling Transport is not supported.");
     }
 
@@ -146,7 +146,7 @@ class LongPollingTransport implements ITransport {
 
       // We will reach here with pollAborted==false when the server returned a response causing the transport to stop.
       // If pollAborted==true then client initiated the stop and the stop method will raise the close event after DELETE is sent.
-      if (!this.pollAborted!) {
+      if (!pollAborted!) {
         _raiseOnClose();
       }
     }
@@ -156,7 +156,7 @@ class LongPollingTransport implements ITransport {
   Future<void> send(Object data) async {
     if (!_running) {
       return Future.error(
-          new GeneralError("Cannot send until the transport is connected"));
+          GeneralError("Cannot send until the transport is connected"));
     }
     await sendMessage(_logger, "LongPolling", _httpClient, _url,
         _accessTokenFactory, data, _logMessageContent);
@@ -200,9 +200,7 @@ class LongPollingTransport implements ITransport {
   }
 
   void _updateHeaderToken(SignalRHttpRequest request, String? token) {
-    if (request.headers == null) {
-      request.headers = MessageHeaders();
-    }
+    request.headers ??= MessageHeaders();
 
     if (!isStringEmpty(token)) {
       request.headers!.setHeaderValue("Authorization", "Bearer $token");
@@ -215,7 +213,7 @@ class LongPollingTransport implements ITransport {
     if (onClose != null) {
       var logMessage = "(LongPolling transport) Firing onclose event.";
       if (_closeError != null) {
-        logMessage += " Error: " + _closeError.toString();
+        logMessage += " Error: $_closeError";
       }
       _logger?.finest(logMessage);
       onClose!(error: GeneralError(_closeError?.toString()));

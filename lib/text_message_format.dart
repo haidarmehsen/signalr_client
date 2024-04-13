@@ -1,9 +1,9 @@
 class TextMessageFormat {
   // Properties
 
-  static const RecordSeparatorCode = 0x1e;
+  static const recordSeparatorCode = 0x1e;
   static String recordSeparator =
-      String.fromCharCode(TextMessageFormat.RecordSeparatorCode);
+      String.fromCharCode(TextMessageFormat.recordSeparatorCode);
 
   static String write(String output) {
     return "$output${TextMessageFormat.recordSeparator}";
@@ -11,7 +11,7 @@ class TextMessageFormat {
 
   static List<String> parse(String input) {
     if (input[input.length - 1] != TextMessageFormat.recordSeparator) {
-      throw new Exception("Message is incomplete.");
+      throw Exception("Message is incomplete.");
     }
 
     var messages = input.split(TextMessageFormat.recordSeparator);

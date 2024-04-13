@@ -8,21 +8,21 @@ import 'itransport.dart';
 import 'text_message_format.dart';
 import 'utils.dart';
 
-const String JSON_HUB_PROTOCOL_NAME = "json";
-const int PROTOCOL_VERSION = 1;
-const TransferFormat TRANSFER_FORMAT = TransferFormat.Text;
+const String jsonHubProtocolName = "json";
+const int protocolVersion = 1;
+const TransferFormat defaultTransferFormat = TransferFormat.text;
 
 class JsonHubProtocol implements IHubProtocol {
   // Properties
 
   @override
-  String get name => JSON_HUB_PROTOCOL_NAME;
+  String get name => jsonHubProtocolName;
 
   @override
-  int get version => PROTOCOL_VERSION;
+  int get version => protocolVersion;
 
   @override
-  TransferFormat get transferFormat => TRANSFER_FORMAT;
+  TransferFormat get transferFormat => defaultTransferFormat;
 
   // Methods
 
@@ -34,8 +34,8 @@ class JsonHubProtocol implements IHubProtocol {
   @override
   List<HubMessageBase> parseMessages(Object input, Logger? logger) {
     // Only JsonContent is allowed.
-    if (!(input is String)) {
-      throw new GeneralError(
+    if (input is! String) {
+      throw GeneralError(
           "Invalid input for JSON hub protocol. Expected a string.");
     }
 
@@ -50,19 +50,19 @@ class JsonHubProtocol implements IHubProtocol {
       HubMessageBase messageObj;
 
       switch (messageType) {
-        case MessageType.Invocation:
+        case MessageType.invocation:
           messageObj = _getInvocationMessageFromJson(jsonData);
           break;
-        case MessageType.StreamItem:
+        case MessageType.streamItem:
           messageObj = _getStreamItemMessageFromJson(jsonData);
           break;
-        case MessageType.Completion:
+        case MessageType.completion:
           messageObj = _getCompletionMessageFromJson(jsonData);
           break;
-        case MessageType.Ping:
+        case MessageType.ping:
           messageObj = _getPingMessageFromJson(jsonData);
           break;
-        case MessageType.Close:
+        case MessageType.close:
           messageObj = _getCloseMessageFromJson(jsonData);
           break;
         default:
@@ -84,9 +84,9 @@ class JsonHubProtocol implements IHubProtocol {
     if (jsonData == null) {
       return null;
     } else {
-      final _headers1 = new Map<String, String>.from(jsonData);
+      final headers1 = Map<String, String>.from(jsonData);
       final headers = MessageHeaders();
-      _headers1.forEach((key, value) {
+      headers1.forEach((key, value) {
         headers.setHeaderValue(key, value);
       });
       return headers;
@@ -180,7 +180,7 @@ class JsonHubProtocol implements IHubProtocol {
       throw GeneralError("Cannot encode message which is null.");
     }
 
-    if (!(message is HubMessageBase)) {
+    if (message is! HubMessageBase) {
       throw GeneralError("Cannot encode message of type '${message.typ}'.");
     }
 

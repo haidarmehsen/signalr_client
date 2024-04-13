@@ -47,14 +47,12 @@ class ServerSentEventsTransport implements ITransport {
       final token = await _accessTokenFactory!();
       if (!isStringEmpty(token)) {
         final encodedToken = Uri.encodeComponent(token);
-        url = url! +
-            (url.indexOf("?") < 0 ? "?" : "&") +
-            "access_token=$encodedToken";
+        url = "${url!}${!url.contains("?") ? "?" : "&"}access_token=$encodedToken";
       }
     }
 
     var opened = false;
-    if (transferFormat != TransferFormat.Text) {
+    if (transferFormat != TransferFormat.text) {
       return Future.error(GeneralError(
           "The Server-Sent Events transport only supports the 'Text' transfer format"));
     }
@@ -92,7 +90,7 @@ class ServerSentEventsTransport implements ITransport {
   Future<void> send(Object data) async {
     if (_sseClient == null) {
       return Future.error(
-          new GeneralError("Cannot send until the transport is connected"));
+          GeneralError("Cannot send until the transport is connected"));
     }
     await sendMessage(
       _logger,
@@ -120,7 +118,7 @@ class ServerSentEventsTransport implements ITransport {
         if (error != null) {
           ex = (error is Exception)
               ? error
-              : new GeneralError(error?.toString());
+              : GeneralError(error?.toString());
         }
         onClose!(error: ex);
       }

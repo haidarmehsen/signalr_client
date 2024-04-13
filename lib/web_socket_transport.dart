@@ -11,9 +11,9 @@ import 'utils.dart';
 class WebSocketTransport implements ITransport {
   // Properties
 
-  Logger? _logger;
-  AccessTokenFactory? _accessTokenFactory;
-  bool _logMessageContent;
+  final Logger? _logger;
+  final AccessTokenFactory? _accessTokenFactory;
+  final bool _logMessageContent;
   WebSocketChannel? _webSocket;
   StreamSubscription<Object?>? _webSocketListenSub;
 
@@ -26,9 +26,9 @@ class WebSocketTransport implements ITransport {
   // Methods
   WebSocketTransport(AccessTokenFactory? accessTokenFactory, Logger? logger,
       bool logMessageContent)
-      : this._accessTokenFactory = accessTokenFactory,
-        this._logger = logger,
-        this._logMessageContent = logMessageContent;
+      : _accessTokenFactory = accessTokenFactory,
+        _logger = logger,
+        _logMessageContent = logMessageContent;
 
   @override
   Future<void> connect(String? url, TransferFormat transferFormat) async {
@@ -40,9 +40,7 @@ class WebSocketTransport implements ITransport {
       final token = await _accessTokenFactory!();
       if (!isStringEmpty(token)) {
         final encodedToken = Uri.encodeComponent(token);
-        url = url! +
-            (url.indexOf("?") < 0 ? "?" : "&") +
-            "access_token=$encodedToken";
+        url = "${url!}${!url.contains("?") ? "?" : "&"}access_token=$encodedToken";
       }
     }
 
@@ -76,7 +74,7 @@ class WebSocketTransport implements ITransport {
 
       // onError
       onError: (Object? error) {
-        var e = error != null ? error : "Unknown websocket error";
+        var e = error ?? "Unknown websocket error";
         if (!websocketCompleter.isCompleted) {
           websocketCompleter.completeError(e);
         }
@@ -129,13 +127,13 @@ class WebSocketTransport implements ITransport {
     return Future.value(null);
   }
 
-  _close() async {
+  Future<void> _close() async {
     if (_webSocket != null) {
       // Clear websocket handlers because we are considering the socket closed now
       await _webSocketListenSub?.cancel();
       _webSocketListenSub = null;
 
-      _webSocket!.sink.close();
+      await _webSocket!.sink.close();
       _webSocket = null;
     }
 

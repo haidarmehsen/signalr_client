@@ -30,19 +30,14 @@ class SignalRHttpRequest {
 
   // Methods
 
-  SignalRHttpRequest(
-      {String? method,
-      String? url,
-      Object? content,
-      MessageHeaders? headers,
-      IAbortSignal? abortSignal,
-      int? timeout})
-      : this.method = method,
-        this.url = url,
-        this.content = content,
-        this.headers = headers,
-        this.abortSignal = abortSignal,
-        this.timeout = timeout;
+  SignalRHttpRequest({
+    this.method,
+    this.url,
+    this.content,
+    this.headers,
+    this.abortSignal,
+    this.timeout,
+  });
 }
 
 /// Represents an HTTP response.
@@ -66,11 +61,11 @@ class SignalRHttpResponse {
   /// statusText: The status message of the response.
   /// content: The content of the response
   ///
-  SignalRHttpResponse(int statusCode,
-      {String? statusText = '', Object? content})
-      : this.statusCode = statusCode,
-        this.statusText = statusText,
-        this.content = content;
+  SignalRHttpResponse(
+    this.statusCode, {
+    this.statusText = '',
+    this.content,
+  });
 }
 
 /// Abstraction over an HTTP client.

@@ -8,21 +8,21 @@ import 'itransport.dart';
 /// Defines the type of a Hub Message.
 enum MessageType {
   /// MessageType is not defined.
-  Undefined, // = 0,
+  undefined, // = 0,
   /// Indicates the message is an Invocation message and implements the {@link @microsoft/signalr.InvocationMessage} interface.
-  Invocation, // = 1,
+  invocation, // = 1,
   /// Indicates the message is a StreamItem message and implements the {@link @microsoft/signalr.StreamItemMessage} interface.
-  StreamItem, // = 2,
+  streamItem, // = 2,
   /// Indicates the message is a Completion message and implements the {@link @microsoft/signalr.CompletionMessage} interface.
-  Completion, // = 3,
+  completion, // = 3,
   /// Indicates the message is a Stream Invocation message and implements the {@link @microsoft/signalr.StreamInvocationMessage} interface.
-  StreamInvocation, // = 4,
+  streamInvocation, // = 4,
   /// Indicates the message is a Cancel Invocation message and implements the {@link @microsoft/signalr.CancelInvocationMessage} interface.
-  CancelInvocation, // = 5,
+  cancelInvocation, // = 5,
   /// Indicates the message is a Ping message and implements the {@link @microsoft/signalr.PingMessage} interface.
-  Ping, // = 6,
+  ping, // = 6,
   /// Indicates the message is a Close message and implements the {@link @microsoft/signalr.CloseMessage} interface.
-  Close, // = 7,
+  close, // = 7,
 }
 
 MessageType? parseMessageTypeFromString(int? value) {
@@ -32,19 +32,19 @@ MessageType? parseMessageTypeFromString(int? value) {
 
   switch (value) {
     case 1:
-      return MessageType.Invocation;
+      return MessageType.invocation;
     case 2:
-      return MessageType.StreamItem;
+      return MessageType.streamItem;
     case 3:
-      return MessageType.Completion;
+      return MessageType.completion;
     case 4:
-      return MessageType.StreamInvocation;
+      return MessageType.streamInvocation;
     case 5:
-      return MessageType.CancelInvocation;
+      return MessageType.cancelInvocation;
     case 6:
-      return MessageType.Ping;
+      return MessageType.ping;
     case 7:
-      return MessageType.Close;
+      return MessageType.close;
     default:
       throw GeneralError("A MessageType of {value} is not supported.");
   }
@@ -52,7 +52,7 @@ MessageType? parseMessageTypeFromString(int? value) {
 
 /// Defines a dictionary of string keys and string values representing headers attached to a Hub message.
 class MessageHeaders {
-  static const String AuthorizationHeaderName = "Authorization";
+  static const String authorizationHeaderName = "Authorization";
 
   // Properties
   HashMap<String, String>? _headers;
@@ -60,7 +60,7 @@ class MessageHeaders {
   Iterable<String> get names => _headers!.keys;
   HashMap<String, String>? get asMap => _headers;
 
-  bool get isEmpty => _headers!.length == 0;
+  bool get isEmpty => _headers!.isEmpty;
 
   // Methods
   MessageHeaders() {
@@ -115,7 +115,7 @@ abstract class HubMessageBase {
   final MessageType type;
 
   // Methods
-  HubMessageBase(MessageType type) : this.type = type;
+  HubMessageBase(this.type);
 }
 
 /// Defines properties common to all Hub messages relating to a specific invocation.
@@ -132,10 +132,8 @@ abstract class HubInvocationMessage extends HubMessageBase {
 
   // Methods
   HubInvocationMessage(
-      MessageType messageType, MessageHeaders? headers, String? invocationId)
-      : this.headers = headers ?? MessageHeaders(),
-        this.invocationId = invocationId,
-        super(messageType);
+      super.messageType, MessageHeaders? headers, this.invocationId)
+      : headers = headers ?? MessageHeaders();
 }
 
 /// A hub message representing a non-streaming invocation.
@@ -153,15 +151,12 @@ class InvocationMessage extends HubInvocationMessage {
 
   // Methods
   InvocationMessage(
-      {String? target,
-      List<Object?>? arguments,
-      List<String>? streamIds,
+      {this.target,
+      this.arguments,
+      this.streamIds,
       MessageHeaders? headers,
       String? invocationId})
-      : this.target = target,
-        this.arguments = arguments,
-        this.streamIds = streamIds,
-        super(MessageType.Invocation, headers, invocationId);
+      : super(MessageType.invocation, headers, invocationId);
   @override
   String toString() {
     return 'InvocationMessage - type: ${type.index}, headers: ${headers.toString()}, invocationId: $invocationId, target: $target, arguments: $arguments, streamIds: $streamIds';
@@ -170,7 +165,7 @@ class InvocationMessage extends HubInvocationMessage {
 
 /// A hub message representing a streaming invocation.
 class StreamInvocationMessage extends HubInvocationMessage {
-  // Properites
+  // Properties
 
   /// The target method name.
   final String? target;
@@ -183,15 +178,12 @@ class StreamInvocationMessage extends HubInvocationMessage {
 
   // Methods
   StreamInvocationMessage(
-      {String? target,
-      List<Object>? arguments,
-      List<String>? streamIds,
+      {this.target,
+      this.arguments,
+      this.streamIds,
       MessageHeaders? headers,
       String? invocationId})
-      : this.target = target,
-        this.arguments = arguments,
-        this.streamIds = streamIds,
-        super(MessageType.StreamInvocation, headers, invocationId);
+      : super(MessageType.streamInvocation, headers, invocationId);
 
   @override
   String toString() {
@@ -208,9 +200,8 @@ class StreamItemMessage extends HubInvocationMessage {
 
   // Methods
   StreamItemMessage(
-      {Object? item, MessageHeaders? headers, String? invocationId})
-      : this.item = item,
-        super(MessageType.StreamItem, headers, invocationId);
+      {this.item, MessageHeaders? headers, String? invocationId})
+      : super(MessageType.streamItem, headers, invocationId);
 
   @override
   String toString() {
@@ -234,13 +225,11 @@ class CompletionMessage extends HubInvocationMessage {
 
   // Methods
   CompletionMessage(
-      {String? error,
-      Object? result,
+      {this.error,
+      this.result,
       MessageHeaders? headers,
       String? invocationId})
-      : this.error = error,
-        this.result = result,
-        super(MessageType.Completion, headers, invocationId);
+      : super(MessageType.completion, headers, invocationId);
   @override
   String toString() {
     return 'CompletionMessage - type: ${type.index}, headers: ${headers.toString()}, invocationId: $invocationId, error: $error, result: $result';
@@ -251,7 +240,7 @@ class CompletionMessage extends HubInvocationMessage {
 class PingMessage extends HubMessageBase {
   // Methods
 
-  PingMessage() : super(MessageType.Ping);
+  PingMessage() : super(MessageType.ping);
   @override
   String toString() {
     return 'PingMessage - type: ${type.index}';
@@ -274,10 +263,8 @@ class CloseMessage extends HubMessageBase {
   final bool? allowReconnect;
 
   //Methods
-  CloseMessage({String? error, bool? allowReconnect})
-      : this.error = error,
-        this.allowReconnect = allowReconnect,
-        super(MessageType.Close);
+  CloseMessage({this.error, this.allowReconnect})
+      : super(MessageType.close);
 
   @override
   String toString() {
@@ -289,7 +276,7 @@ class CloseMessage extends HubMessageBase {
 class CancelInvocationMessage extends HubInvocationMessage {
   // Methods
   CancelInvocationMessage({MessageHeaders? headers, String? invocationId})
-      : super(MessageType.CancelInvocation, headers, invocationId);
+      : super(MessageType.cancelInvocation, headers, invocationId);
 
   @override
   String toString() {
@@ -311,10 +298,8 @@ abstract class IHubProtocol {
   final TransferFormat transferFormat;
 
   // Methods
-  IHubProtocol(String name, int number, TransferFormat transferFormat)
-      : this.name = name,
-        this.version = number,
-        this.transferFormat = transferFormat;
+  IHubProtocol(this.name, int number, this.transferFormat)
+      : version = number;
 
   /// Creates an array of {@link @microsoft/signalr.HubMessage} objects from the specified serialized representation.
   ///

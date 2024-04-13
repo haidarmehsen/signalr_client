@@ -43,21 +43,14 @@ class HttpConnectionOptions {
   int requestTimeout;
 
   // Methods
-  HttpConnectionOptions(
-      {SignalRHttpClient? httpClient,
-      Object? transport,
-      Logger? logger,
-      AccessTokenFactory? accessTokenFactory,
-      MessageHeaders? headers,
-      bool logMessageContent = false,
-      bool skipNegotiation = false,
-      int requestTimeout = 2000})
-      : this.httpClient = httpClient,
-        this.transport = transport,
-        this.logger = logger,
-        this.accessTokenFactory = accessTokenFactory,
-        this.headers = headers,
-        this.logMessageContent = logMessageContent,
-        this.skipNegotiation = skipNegotiation,
-        this.requestTimeout = requestTimeout;
+  HttpConnectionOptions({
+    this.httpClient,
+    this.transport,
+    this.logger,
+    this.accessTokenFactory,
+    this.headers,
+    this.logMessageContent = false,
+    this.skipNegotiation = false,
+    this.requestTimeout = 2000,
+  });
 }

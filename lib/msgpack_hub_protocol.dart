@@ -7,18 +7,18 @@ import 'ihub_protocol.dart';
 import 'itransport.dart';
 import 'binary_message_format.dart';
 
-const String MSGPACK_HUB_PROTOCOL_NAME = "messagepack";
-const int PROTOCOL_VERSION = 1;
-const TransferFormat TRANSFER_FORMAT = TransferFormat.Binary;
+const String msgPackHubProtocolName = "messagepack";
+const int protocolVersion = 1;
+const TransferFormat defaultTransferFormat = TransferFormat.binary;
 
 class MessagePackHubProtocol implements IHubProtocol {
   @override
-  String get name => MSGPACK_HUB_PROTOCOL_NAME;
+  String get name => msgPackHubProtocolName;
   @override
-  TransferFormat get transferFormat => TRANSFER_FORMAT;
+  TransferFormat get transferFormat => defaultTransferFormat;
 
   @override
-  int get version => PROTOCOL_VERSION;
+  int get version => protocolVersion;
 
   static const _errorResult = 1;
   static const _voidResult = 2;
@@ -26,8 +26,8 @@ class MessagePackHubProtocol implements IHubProtocol {
 
   @override
   List<HubMessageBase> parseMessages(Object input, Logger? logger) {
-    if (!(input is Uint8List)) {
-      throw new GeneralError(
+    if (input is! Uint8List) {
+      throw GeneralError(
           "Invalid input for MessagePack hub protocol. Expected an Uint8List.");
     }
 
@@ -35,27 +35,27 @@ class MessagePackHubProtocol implements IHubProtocol {
     final List<HubMessageBase> hubMessages = [];
 
     final messages = BinaryMessageFormat.parse(binaryInput);
-    if (messages.length == 0) {
-      throw new GeneralError("Cannot encode message which is null.");
+    if (messages.isEmpty) {
+      throw GeneralError("Cannot encode message which is null.");
     }
 
     for (var message in messages) {
-      if (message.length == 0) {
-        throw new GeneralError("Cannot encode message which is null.");
+      if (message.isEmpty) {
+        throw GeneralError("Cannot encode message which is null.");
       }
 
       final unpackedData = msgpack.deserialize(message);
       List<dynamic> unpackedList;
       if (unpackedData == null) {
-        throw new GeneralError("Cannot encode message which is null.");
+        throw GeneralError("Cannot encode message which is null.");
       }
       try {
         unpackedList = List<dynamic>.from(unpackedData as List<dynamic>);
       } catch (_) {
-        throw new GeneralError("Invalid payload.");
+        throw GeneralError("Invalid payload.");
       }
-      if (unpackedList.length == 0) {
-        throw new GeneralError("Cannot encode message which is null.");
+      if (unpackedList.isEmpty) {
+        throw GeneralError("Cannot encode message which is null.");
       }
       final messageObj = _parseMessage(unpackedData, logger);
       if (messageObj != null) {
@@ -66,39 +66,40 @@ class MessagePackHubProtocol implements IHubProtocol {
   }
 
   static HubMessageBase? _parseMessage(List<dynamic> data, Logger? logger) {
-    if (data.length == 0) {
-      throw new GeneralError("Invalid payload.");
+    if (data.isEmpty) {
+      throw GeneralError("Invalid payload.");
     }
     HubMessageBase? messageObj;
 
     final messageType = data[0] as int;
 
-    if (messageType == MessageType.Invocation.index) {
+    if (messageType == MessageType.invocation.index) {
       messageObj = _createInvocationMessage(data);
       return messageObj;
     }
 
-    if (messageType == MessageType.StreamItem.index) {
+    if (messageType == MessageType.streamItem.index) {
       messageObj = _createStreamItemMessage(data);
       return messageObj;
     }
 
-    if (messageType == MessageType.Completion.index) {
+    if (messageType == MessageType.completion.index) {
       messageObj = _createCompletionMessage(data);
       return messageObj;
     }
 
-    if (messageType == MessageType.Ping.index) {
+    if (messageType == MessageType.ping.index) {
       messageObj = _createPingMessage(data);
       return messageObj;
     }
 
-    if (messageType == MessageType.Close.index) {
+    if (messageType == MessageType.close.index) {
       messageObj = _createCloseMessage(data);
       return messageObj;
     } else {
       // Future protocol changes can add message types, old clients can ignore them
       logger?.info("Unknown message type '$messageType' ignored.");
+      // ignore: avoid_print
       print(data);
       return messageObj;
     }
@@ -110,9 +111,9 @@ class MessagePackHubProtocol implements IHubProtocol {
     } else {
       if (data[1] == null) return MessageHeaders();
       try {
-        final _headers1 = new Map<String, String>.from(data[1]);
+        final headers1 = Map<String, String>.from(data[1]);
         final headers = MessageHeaders();
-        _headers1.forEach((key, value) {
+        headers1.forEach((key, value) {
           headers.setHeaderValue(key, value);
         });
         return headers;
@@ -127,7 +128,7 @@ class MessagePackHubProtocol implements IHubProtocol {
       throw GeneralError("Invalid payload for Invocation message.");
     }
 
-    final MessageHeaders? headers = createMessageHeaders(data);
+    final MessageHeaders headers = createMessageHeaders(data);
 
     final message = InvocationMessage(
         target: data[3] as String?,
@@ -143,7 +144,7 @@ class MessagePackHubProtocol implements IHubProtocol {
     if (data.length < 4) {
       throw GeneralError("Invalid payload for StreamItem message.");
     }
-    final MessageHeaders? headers = createMessageHeaders(data);
+    final MessageHeaders headers = createMessageHeaders(data);
     final message = StreamItemMessage(
       item: data[3] as Object?,
       headers: headers,
@@ -157,7 +158,7 @@ class MessagePackHubProtocol implements IHubProtocol {
     if (data.length < 4) {
       throw GeneralError("Invalid payload for Completion message.");
     }
-    final MessageHeaders? headers = createMessageHeaders(data);
+    final MessageHeaders headers = createMessageHeaders(data);
     final resultKind = data[3];
     if (resultKind != _voidResult && data.length < 5) {
       throw GeneralError("Invalid payload for Completion message.");
@@ -188,7 +189,7 @@ class MessagePackHubProtocol implements IHubProtocol {
   }
 
   static PingMessage _createPingMessage(List<dynamic> data) {
-    if (data.length < 1) {
+    if (data.isEmpty) {
       throw GeneralError("Invalid payload for Ping message.");
     }
     return PingMessage();
@@ -209,17 +210,17 @@ class MessagePackHubProtocol implements IHubProtocol {
   Object writeMessage(HubMessageBase message) {
     final messageType = message.type;
     switch (messageType) {
-      case MessageType.Invocation:
+      case MessageType.invocation:
         return _writeInvocation(message as InvocationMessage);
-      case MessageType.StreamInvocation:
+      case MessageType.streamInvocation:
         return _writeStreamInvocation(message as StreamInvocationMessage);
-      case MessageType.StreamItem:
+      case MessageType.streamItem:
         return _writeStreamItem(message as StreamItemMessage);
-      case MessageType.Completion:
+      case MessageType.completion:
         return _writeCompletion(message as CompletionMessage);
-      case MessageType.Ping:
+      case MessageType.ping:
         return _writePing();
-      case MessageType.CancelInvocation:
+      case MessageType.cancelInvocation:
         return _writeCancelInvocation(message as CancelInvocationMessage);
       default:
         throw GeneralError("Invalid message type.");
@@ -233,7 +234,7 @@ class MessagePackHubProtocol implements IHubProtocol {
 
     if ((message.streamIds?.length ?? 0) > 0) {
       payload = [
-        MessageType.Invocation.index,
+        MessageType.invocation.index,
         message.headers.asMap,
         message.invocationId,
         message.target,
@@ -242,7 +243,7 @@ class MessagePackHubProtocol implements IHubProtocol {
       ];
     } else {
       payload = [
-        MessageType.Invocation.index,
+        MessageType.invocation.index,
         message.headers.asMap,
         message.invocationId,
         message.target,
@@ -259,7 +260,7 @@ class MessagePackHubProtocol implements IHubProtocol {
 
     if ((message.streamIds?.length ?? 0) > 0) {
       payload = [
-        MessageType.StreamInvocation.index,
+        MessageType.streamInvocation.index,
         message.headers.asMap,
         message.invocationId,
         message.target,
@@ -268,7 +269,7 @@ class MessagePackHubProtocol implements IHubProtocol {
       ];
     } else {
       payload = [
-        MessageType.StreamInvocation.index,
+        MessageType.streamInvocation.index,
         message.headers.asMap,
         message.invocationId,
         message.target,
@@ -284,7 +285,7 @@ class MessagePackHubProtocol implements IHubProtocol {
     List<dynamic> payload;
 
     payload = [
-      MessageType.StreamItem.index,
+      MessageType.streamItem.index,
       message.headers.asMap,
       message.invocationId,
       message.item
@@ -303,7 +304,7 @@ class MessagePackHubProtocol implements IHubProtocol {
             : _voidResult;
     if (resultKind == _errorResult) {
       payload = [
-        MessageType.Completion.index,
+        MessageType.completion.index,
         message.headers.asMap,
         message.invocationId,
         resultKind,
@@ -311,7 +312,7 @@ class MessagePackHubProtocol implements IHubProtocol {
       ];
     } else if (resultKind == _nonVoidResult) {
       payload = [
-        MessageType.Completion.index,
+        MessageType.completion.index,
         message.headers.asMap,
         message.invocationId,
         resultKind,
@@ -319,7 +320,7 @@ class MessagePackHubProtocol implements IHubProtocol {
       ];
     } else {
       payload = [
-        MessageType.Completion.index,
+        MessageType.completion.index,
         message.headers.asMap,
         message.invocationId,
         resultKind
@@ -334,7 +335,7 @@ class MessagePackHubProtocol implements IHubProtocol {
     List<dynamic> payload;
 
     payload = [
-      MessageType.CancelInvocation.index,
+      MessageType.cancelInvocation.index,
       message.headers.asMap,
       message.invocationId,
     ];
@@ -347,7 +348,7 @@ class MessagePackHubProtocol implements IHubProtocol {
     List<dynamic> payload;
 
     payload = [
-      MessageType.Ping.index,
+      MessageType.ping.index,
     ];
 
     final packedData = msgpack.serialize(payload);

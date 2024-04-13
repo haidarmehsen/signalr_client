@@ -97,7 +97,7 @@ class HubConnectionBuilder {
 
     // Now create the connection
     if (isStringEmpty(_url)) {
-      throw new GeneralError(
+      throw GeneralError(
           "The 'HubConnectionBuilder.withUrl' method must be called before building the connection.");
     }
     final connection = HttpConnection(_url!, options: httpConnectionOptions);
